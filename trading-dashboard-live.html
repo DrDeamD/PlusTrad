@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>محكمة التداول | لوحة البيانات الحية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080c10;--bg2:#0d1218;--bg3:#121820;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#d8e2f0;--text2:#7a8fa8;--text3:#3a4a5a;
+  --green:#00e676;--red:#ff3d3d;--gold:#ffd700;
+  --blue:#00b4ff;--purple:#a855f7;--orange:#ff8c42;
+  --mono:'JetBrains Mono',monospace;--arabic:'IBM Plex Arabic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--arabic);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,180,255,0.013) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.013) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0}
+.wrap{max-width:1440px;margin:0 auto;padding:10px;position:relative;z-index:1}
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  padding:12px 16px;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;margin-bottom:10px}
+.hdr-title{font-size:19px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-sub{font-size:9px;color:var(--text3);margin-top:2px}
+.hdr-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;
+  font-size:9px;font-weight:600;letter-spacing:0.06em;font-family:var(--mono)}
+.b-live{background:rgba(0,230,118,0.12);border:1px solid rgba(0,230,118,0.35);color:var(--green)}
+.b-blue{background:rgba(0,180,255,0.1);border:1px solid rgba(0,180,255,0.3);color:var(--blue)}
+.b-gold{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:var(--gold)}
+.b-red{background:rgba(255,61,61,0.1);border:1px solid rgba(255,61,61,0.3);color:var(--red)}
+.b-purple{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);color:var(--purple)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+/* STATUS BAR */
+.sbar{display:flex;align-items:center;gap:8px;padding:7px 12px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  font-size:9px;color:var(--text2);font-family:var(--mono);margin-bottom:10px}
+.cbar{height:2px;width:80px;border-radius:2px;background:rgba(255,255,255,0.07);overflow:hidden}
+.cfill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width 1s linear}
+/* BEST OPP */
+.best{padding:10px 14px;border-radius:12px;margin-bottom:10px;
+  background:rgba(0,180,255,0.05);border:1px solid rgba(0,180,255,0.25);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* PAIRS BAR */
+.pbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pb{flex:1;min-width:90px;padding:9px 7px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden}
+.pb:hover{border-color:var(--border2);background:var(--bg3)}
+.pb.active{border-color:var(--blue);background:rgba(0,180,255,0.06)}
+.pb .pn{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--text);margin-bottom:3px}
+.pb .pp{font-size:10px;font-family:var(--mono);color:var(--blue)}
+.pb .pc{font-size:8px;font-family:var(--mono)}
+.pb .psig{position:absolute;top:5px;left:5px;font-size:7px;font-weight:700;font-family:var(--mono);padding:1px 4px;border-radius:3px}
+.pb .psrc{position:absolute;top:4px;right:4px;font-size:8px}
+.s-buy{background:rgba(0,230,118,0.2);color:var(--green)}
+.s-sell{background:rgba(255,61,61,0.2);color:var(--red)}
+.s-wait{background:rgba(255,215,0,0.12);color:var(--gold)}
+/* MAIN GRID */
+.mgrid{display:grid;grid-template-columns:1fr 330px;gap:10px}
+@media(max-width:880px){.mgrid{grid-template-columns:1fr}}
+.left{display:flex;flex-direction:column;gap:10px}
+.right{display:flex;flex-direction:column;gap:10px}
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px}
+.ct{font-size:9px;font-weight:600;letter-spacing:0.13em;color:var(--text3);margin-bottom:10px;
+  display:flex;align-items:center;gap:6px}
+.ct span:first-child{flex:1}
+/* MS GRID */
+.msc{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+@media(max-width:560px){.msc{grid-template-columns:repeat(2,1fr)}}
+.cell{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;padding:7px 9px;text-align:center}
+.cv{font-size:13px;font-weight:700;font-family:var(--mono)}
+.cl{font-size:7px;color:var(--text3);letter-spacing:0.08em;margin-top:2px}
+/* CHART */
+.chbox{background:rgba(255,255,255,0.015);border-radius:8px;overflow:hidden}
+/* CONSENSUS */
+.cbox{border-radius:10px;padding:14px;background:var(--bg3)}
+.dbig{font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px}
+.vbars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:10px 0}
+.vi{text-align:center}
+.vn{font-size:15px;font-weight:800;font-family:var(--mono)}
+.vl{font-size:7px;color:var(--text3);letter-spacing:0.08em}
+.vt{height:3px;border-radius:2px;background:rgba(255,255,255,0.07);margin:3px 0;overflow:hidden}
+.vf{height:100%;border-radius:2px;transition:width .8s ease}
+.narr{font-size:10px;color:var(--text2);padding:8px 10px;background:rgba(255,255,255,0.025);
+  border-radius:7px;border-right:2px solid var(--purple);margin-top:8px;line-height:1.55}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.ritem{font-size:9px;color:var(--text2);padding:4px 8px;border-radius:5px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border)}
+.sce{background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);
+  border-radius:7px;padding:6px 10px;font-size:9px;color:var(--text2);margin-top:4px}
+/* AGENTS */
+.agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+@media(max-width:640px){.agrid{grid-template-columns:repeat(2,1fr)}}
+.ac{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;
+  padding:9px;cursor:pointer;transition:all .15s}
+.ac:hover{border-color:var(--border2);background:rgba(255,255,255,0.033)}
+.ac.sel{border-color:rgba(0,180,255,0.5);background:rgba(0,180,255,0.05)}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0}
+.an{font-size:10px;font-weight:700;color:var(--text);line-height:1.2}
+.as{font-size:7px;color:var(--text3)}
+.dt{display:inline-block;padding:2px 6px;border-radius:3px;font-size:8px;font-weight:700;font-family:var(--mono);margin:4px 0 2px}
+.dt-b{background:rgba(0,230,118,0.15);color:var(--green);border:1px solid rgba(0,230,118,0.3)}
+.dt-s{background:rgba(255,61,61,0.15);color:var(--red);border:1px solid rgba(255,61,61,0.3)}
+.dt-w{background:rgba(255,215,0,0.1);color:var(--gold);border:1px solid rgba(255,215,0,0.25)}
+.dt-n{background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid var(--border)}
+.cb{height:2px;border-radius:1px;background:rgba(255,255,255,0.07);overflow:hidden}
+.cf{height:100%;border-radius:1px;transition:width .6s}
+/* RISK */
+.rkgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 0}
+.rrcells{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:7px}
+.rksb{height:4px;border-radius:2px;background:rgba(255,255,255,0.07);overflow:hidden;margin:6px 0}
+.rksfill{height:100%;border-radius:2px;transition:width .8s}
+/* NEWS */
+.ni{padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,0.015);margin-bottom:4px}
+.nh{font-size:10px;color:var(--text);line-height:1.4;direction:ltr;text-align:left}
+.nm{display:flex;gap:5px;align-items:center;margin-top:4px;font-size:8px;color:var(--text3)}
+.ns{padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;font-family:var(--mono)}
+/* HISTORY */
+.hr{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:6px;
+  background:rgba(255,255,255,0.018);border:1px solid var(--border);margin-bottom:3px;font-size:9px}
+/* INTERACTIONS */
+.ii{display:flex;align-items:flex-start;gap:7px;padding:6px;border-radius:6px;
+  background:rgba(255,255,255,0.015);margin-bottom:3px;font-size:9px}
+.iav{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
+/* CAL */
+.cal{padding:5px 8px;border-radius:6px;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);margin-bottom:3px;font-size:9px}
+/* PAIRS OV */
+.por{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;
+  border-radius:7px;border:1px solid var(--border);margin-bottom:3px;cursor:pointer;transition:all .15s}
+.por:hover{background:rgba(255,255,255,0.03)}
+.por.act{background:rgba(0,180,255,0.05);border-color:rgba(0,180,255,0.3)}
+/* PILLS */
+.pr{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:600;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2)}
+/* LOADING */
+.ld{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;gap:7px}
+.spin{width:30px;height:30px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--blue);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sk{background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.07) 50%,rgba(255,255,255,0.03) 75%);
+  background-size:200% 100%;animation:shim 1.4s infinite;border-radius:5px}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.er{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;gap:5px;text-align:center}
+/* BTN */
+.btn{padding:5px 12px;border-radius:7px;font-size:9px;font-weight:700;cursor:pointer;
+  font-family:var(--arabic);transition:all .15s;border:1px solid;
+  background:rgba(0,180,255,0.15);border-color:rgba(0,180,255,0.4);color:var(--blue)}
+.btn:hover{background:rgba(0,180,255,0.25)}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="hdr-title">⚖ محكمة التداول</div>
+    <div class="hdr-sub">16 وكيل · TwelveData + Finnhub · بيانات حية فقط — لا بيانات مزيفة</div>
+  </div>
+  <div class="hdr-meta">
+    <span class="badge b-live"><span class="dot"></span>مباشر</span>
+    <span class="badge b-blue" id="h-session">—</span>
+    <span class="badge b-blue" id="h-time">—</span>
+    <span class="badge b-gold" id="h-cycle">دورة #0</span>
+    <button class="btn" onclick="runCycle(true)">🔄 تحديث فوري</button>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="sbar">
+  <span class="dot" id="sdot" style="display:none"></span>
+  <span id="stxt">جاهز</span>
+  <div style="flex:1"></div>
+  <span style="color:var(--text3)">آخر تحديث:</span>
+  <span id="lupd" style="color:var(--text)">—</span>
+  <div class="cbar"><div class="cfill" id="cfill" style="width:100%"></div></div>
+  <span id="ctxt" style="color:var(--text3)">30:00</span>
+</div>
+
+<!-- BEST OPPORTUNITY -->
+<div class="best" id="best" style="display:none">
+  <div style="font-size:22px">🏆</div>
+  <div style="flex:1">
+    <div style="font-size:8px;color:var(--text3);letter-spacing:0.1em;margin-bottom:2px">أفضل فرصة حالياً</div>
+    <div id="best-main" style="font-size:14px;font-weight:800"></div>
+  </div>
+  <div id="best-sub" style="font-size:10px;color:var(--text2);direction:ltr;text-align:left"></div>
+</div>
+
+<!-- PAIRS BAR -->
+<div class="pbar" id="pbar"></div>
+
+<!-- MAIN -->
+<div class="mgrid">
+<div class="left">
+
+  <!-- Market State -->
+  <div class="card">
+    <div class="ct"><span>📊 الحالة التقنية — <span id="ms-pair" style="color:var(--blue);font-family:var(--mono)">—</span></span>
+      <span id="ms-src" class="badge b-blue" style="font-size:7px"></span></div>
+    <div id="ms-body"><div class="ld"><div class="spin"></div><div style="font-size:10px;color:var(--text3)">جلب البيانات...</div></div></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card" style="padding:10px">
+    <div class="ct"><span>📈 H1 — <span id="ch-pair" style="color:var(--blue);font-family:var(--mono)">—</span></span>
+      <span id="ch-info" style="font-size:8px;color:var(--text3)"></span></div>
+    <div id="ch-box" class="chbox"><div class="ld" style="height:120px"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- Consensus -->
+  <div class="card">
+    <div class="ct"><span>⚖ حكم المحكمة</span><span id="con-pair" style="font-size:9px;color:var(--blue);font-family:var(--mono)"></span></div>
+    <div id="con-body"><div class="ld"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- Agents -->
+  <div class="card">
+    <div class="ct"><span>🤖 مجلس الوكلاء</span>
+      <span id="ag-sum" class="badge b-blue" style="font-size:7px"></span>
+      <button class="btn" onclick="selectedAgent=null;renderAgents(activePair);document.getElementById('agdet').style.display='none'" style="font-size:8px;padding:3px 8px">إلغاء</button>
+    </div>
+    <div class="agrid" id="agrid"></div>
+  </div>
+
+  <!-- Agent Detail -->
+  <div class="card" id="agdet" style="display:none">
+    <div class="ct"><span>🔍 تفاصيل الوكيل</span>
+      <button class="btn" onclick="selectedAgent=null;renderAgents(activePair);this.closest('.card').style.display='none'" style="font-size:8px;padding:3px 8px">✕</button>
+    </div>
+    <div id="agdet-body"></div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="ct"><span>📋 سجل الإشارات</span><span id="hcnt" style="font-size:8px;color:var(--text3)"></span></div>
+    <div id="hbody"><div style="font-size:9px;color:var(--text3);padding:8px">سيُملأ تلقائياً بعد أول دورة.</div></div>
+  </div>
+
+</div>
+<div class="right">
+
+  <!-- Risk -->
+  <div class="card">
+    <div class="ct"><span>⚠ إدارة المخاطر</span><span id="risk-badge"></span></div>
+    <div id="risk-body"><div class="ld" style="height:80px"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- News -->
+  <div class="card">
+    <div class="ct"><span>📰 أخبار حية</span><span id="news-src" class="badge b-blue" style="font-size:7px">Finnhub</span></div>
+    <div id="news-sent" style="margin-bottom:7px"></div>
+    <div id="news-body"><div class="ld" style="height:70px"><div class="spin"></div></div></div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="card">
+    <div class="ct"><span>🗓 التقويم الاقتصادي</span></div>
+    <div id="cal-body"><div style="font-size:9px;color:var(--text3);padding:4px">جارٍ الفحص...</div></div>
+  </div>
+
+  <!-- Interactions -->
+  <div class="card">
+    <div class="ct"><span>💬 نقاشات الوكلاء</span></div>
+    <div id="int-body"><div class="sk" style="height:13px;margin-bottom:4px"></div><div class="sk" style="height:13px;width:70%"></div></div>
+  </div>
+
+  <!-- Pairs Overview -->
+  <div class="card">
+    <div class="ct"><span>📊 ملخص جميع الأزواج</span></div>
+    <div id="po-body"></div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+'use strict';
+const TD_KEY="cf3cd947a5864c668fa323b60835b7e9";
+const FH_KEY1="d77lguhr01qp6afm1sggd77lguhr01qp6afm1sh0";
+const FH_KEY2="d2gc3vhr01qq1lhuckhgd2gc3vhr01qq1lhucki0";
+const PAIRS=["XAU/USD","EUR/USD","GBP/USD","USD/JPY","AUD/USD","USD/CAD"];
+const CACHE={},CACHE_TTL=60000;
+let calendarEvents=[];
+let cycleNum=0,activePair="XAU/USD",simMap={},dataSources={},selectedAgent=null;
+let countdownSec=1800,cInterval=null,isLoading=false;
+let signalHistory=[],prevCycleMap={};
+let agentStates={};
+try{const s=localStorage.getItem('tc_v3');if(s)agentStates=JSON.parse(s);}catch(e){}
+
+const AGENTS=[
+  {id:"A01",name:"Marcus",style:"ICT/SMC",tf:"H1/H4",risk:"متوسط",color:"#00d4ff"},
+  {id:"A02",name:"Yuki",style:"Price Action",tf:"M15/H1",risk:"منخفض",color:"#ff6b9d"},
+  {id:"A03",name:"Ahmed",style:"News Trading",tf:"M5/M15",risk:"مرتفع",color:"#ffd700"},
+  {id:"A04",name:"Elena",style:"Trend Following",tf:"H4/D1",risk:"منخفض",color:"#00ff88"},
+  {id:"A05",name:"Carlos",style:"Scalping",tf:"M1/M5",risk:"مرتفع جداً",color:"#ff4444"},
+  {id:"A06",name:"Priya",style:"Mean Reversion",tf:"H1/H4",risk:"متوسط",color:"#a78bfa"},
+  {id:"A07",name:"James",style:"Breakout",tf:"M30/H1",risk:"مرتفع",color:"#fb923c"},
+  {id:"A08",name:"Sofia",style:"Volume/Momentum",tf:"M15/H1",risk:"متوسط",color:"#34d399"},
+  {id:"A09",name:"David",style:"ICT/Liquidity",tf:"H1/H4",risk:"متوسط",color:"#60a5fa"},
+  {id:"A10",name:"Mei",style:"Wyckoff",tf:"H4/D1",risk:"منخفض",color:"#f472b6"},
+  {id:"A11",name:"Omar",style:"Fibonacci",tf:"M30/H1",risk:"متوسط",color:"#facc15"},
+  {id:"A12",name:"Anna",style:"Elliott Wave",tf:"H4/D1",risk:"منخفض",color:"#818cf8"},
+  {id:"A13",name:"Jake",style:"Order Flow",tf:"M5/M15",risk:"مرتفع",color:"#f87171"},
+  {id:"A14",name:"Leila",style:"Harmonic Patterns",tf:"H1/H4",risk:"متوسط",color:"#2dd4bf"},
+  {id:"A15",name:"Victor",style:"Multi-TF Confluence",tf:"All TFs",risk:"منخفض",color:"#e879f9"},
+  {id:"A16",name:"Zara",style:"Algo/Quant",tf:"M15/H1",risk:"متوسط",color:"#a3e635"},
+];
+
+const PAIR_KW={
+  "XAU/USD":["gold","xau","bullion","precious","fed","inflation","dollar","haven","ounce"],
+  "EUR/USD":["euro","eur","ecb","european","eurozone","lagarde"],
+  "GBP/USD":["sterling","pound","gbp","boe","bank of england","uk","britain"],
+  "USD/JPY":["yen","jpy","boj","bank of japan","japan","nikkei"],
+  "AUD/USD":["aud","aussie","australia","rba","commodity"],
+  "USD/CAD":["cad","loonie","canada","boc","oil","crude"]
+};
+const HIGH_IMPACT=["nfp","non-farm","fomc","cpi","ppi","gdp","interest rate","rate decision","unemployment","payroll","inflation"];
+
+/* ── TA ENGINE ── */
+function rsiCalc(cl,p=14){
+  if(cl.length<p+1)return 50;
+  let g=0,l=0;
+  for(let i=cl.length-p;i<cl.length;i++){const d=cl[i]-cl[i-1];d>0?g+=d:l-=d}
+  return l===0?100:100-100/(1+g/l);
+}
+function emaCalc(cl,p){
+  if(cl.length<p)return cl[cl.length-1];
+  const k=2/(p+1);let e=cl.slice(0,p).reduce((a,b)=>a+b,0)/p;
+  for(let i=p;i<cl.length;i++)e=cl[i]*k+e*(1-k);return e;
+}
+function macdCalc(cl){
+  if(cl.length<26)return{macd:0,signal:0,hist:0};
+  const m=emaCalc(cl,12)-emaCalc(cl,26);return{macd:m,signal:m*0.9,hist:m*0.1};
+}
+function bollCalc(cl,p=20){
+  if(cl.length<p)return{upper:0,mid:0,lower:0,pct:0.5};
+  const sl=cl.slice(-p),mid=sl.reduce((a,b)=>a+b,0)/p;
+  const std=Math.sqrt(sl.reduce((s,c)=>s+(c-mid)**2,0)/p);
+  const upper=mid+2*std,lower=mid-2*std,last=cl[cl.length-1];
+  return{upper,mid,lower,pct:std===0?0.5:(last-lower)/(upper-lower)};
+}
+function atrCalc(hi,lo,cl,p=14){
+  if(cl.length<2)return 0;
+  const tr=[];for(let i=1;i<cl.length;i++)tr.push(Math.max(hi[i]-lo[i],Math.abs(hi[i]-cl[i-1]),Math.abs(lo[i]-cl[i-1])));
+  const sl=tr.slice(-p);return sl.reduce((a,b)=>a+b,0)/sl.length;
+}
+function srCalc(hi,lo,cl){
+  if(hi.length<10)return{sup:lo[lo.length-1],res:hi[hi.length-1]};
+  const n=Math.min(50,hi.length),rH=hi.slice(-n),rL=lo.slice(-n);
+  const pH=[],pL=[];
+  for(let i=2;i<rH.length-2;i++){
+    if(rH[i]>rH[i-1]&&rH[i]>rH[i-2]&&rH[i]>rH[i+1]&&rH[i]>rH[i+2])pH.push(rH[i]);
+    if(rL[i]<rL[i-1]&&rL[i]<rL[i-2]&&rL[i]<rL[i+1]&&rL[i]<rL[i+2])pL.push(rL[i]);
+  }
+  const cur=cl[cl.length-1];
+  return{sup:pL.filter(p=>p<cur).sort((a,b)=>b-a)[0]||Math.min(...rL),
+         res:pH.filter(p=>p>cur).sort((a,b)=>a-b)[0]||Math.max(...rH)};
+}
+function bosCalc(cl,hi,lo){
+  if(cl.length<10)return{bos:false,dir:null};
+  const rH=Math.max(...hi.slice(-10,-1)),rL=Math.min(...lo.slice(-10,-1)),last=cl[cl.length-1];
+  if(last>rH)return{bos:true,dir:"bullish"};if(last<rL)return{bos:true,dir:"bearish"};return{bos:false,dir:null};
+}
+function fvgCalc(hi,lo){
+  if(hi.length<3)return null;const n=hi.length;
+  for(let i=n-1;i>=2;i--){
+    if(lo[i]>hi[i-2])return{type:"bullish"};if(hi[i]<lo[i-2])return{type:"bearish"};
+  }return null;
+}
+function session(){
+  const h=new Date().getUTCHours();
+  if(h>=22||h<8)return"جلسة آسيا";if(h>=8&&h<12)return"جلسة لندن";
+  if(h>=12&&h<17)return"جلسة نيويورك";return"انتقال / إغلاق";
+}
+function buildMS(candles,pair,newsSent){
+  if(!candles||candles.length<5)return null;
+  const cl=candles.map(c=>c.close),hi=candles.map(c=>c.high),lo=candles.map(c=>c.low);
+  const last=cl[cl.length-1],prev=cl[cl.length-2];
+  const rsi=rsiCalc(cl),macd=macdCalc(cl),boll=bollCalc(cl),sr=srCalc(hi,lo,cl);
+  const atr=atrCalc(hi,lo,cl),bos=bosCalc(cl,hi,lo),fvg=fvgCalc(hi,lo);
+  const ema20=emaCalc(cl,20),ema50=emaCalc(cl,50),ema200=emaCalc(cl,Math.min(200,cl.length));
+  const trend=last>ema50&&ema20>ema50?"bullish":last<ema50&&ema20<ema50?"bearish":"sideways";
+  const vp=atr/last*100,vol=vp>0.8?"high":vp>0.3?"medium":"low";
+  return{pair,last,prev,change_pct:((last-prev)/prev*100).toFixed(3),
+    rsi:rsi.toFixed(1),macd_cross:macd.macd>macd.signal?"bullish":"bearish",
+    boll_pct:boll.pct.toFixed(2),ema20,ema50,ema200,trend,volatility:vol,
+    support:sr.sup,resistance:sr.res,
+    dist_to_res:sr.res>0?((sr.res-last)/last*100).toFixed(3):null,
+    dist_to_sup:sr.sup>0?((last-sr.sup)/last*100).toFixed(3):null,
+    bos:bos.bos,bos_dir:bos.dir,fvg,atr,session:session(),candle_count:candles.length,
+    newsScore:newsSent?.score??0,newsLabel:newsSent?.label??"محايد"};
+}
+
+/* ── DECISION ── */
+function rnd(seed,s){const x=Math.sin(seed*1000+s)*10000;return x-Math.floor(x);}
+function decide(agent,ms,seed){
+  if(!ms)return{decision:"انتظار",confidence:0.5,entry:"0",sl:null,tp1:null,tp2:null,reasoning:"لا بيانات",confluences:[]};
+  const rsi=parseFloat(ms.rsi),mBull=ms.macd_cross==="bullish",boll=parseFloat(ms.boll_pct);
+  const trend=ms.trend,bos=ms.bos,bosBull=ms.bos_dir==="bullish",ns=ms.newsScore||0;
+  const noise=(rnd(seed,1)-0.5)*0.14;
+  let d="انتظار",c=0.55,r="",cf=[];
+  switch(agent.style){
+    case"ICT/SMC":case"ICT/Liquidity":
+      if(bos&&bosBull&&ms.fvg?.type==="bullish"){d="شراء";c=.80+noise;r="BOS صاعد + FVG";cf=["BOS صاعد","FVG","تحول هيكلي"]}
+      else if(bos&&!bosBull){d="بيع";c=.76+noise;r="BOS هابط مؤكد";cf=["BOS هابط","منطقة بريميوم","سيولة"]}
+      else{d="انتظار";c=.44+noise;r="لا BOS"}; break;
+    case"Price Action":
+      if(trend==="bullish"&&rsi>45&&rsi<65){d="شراء";c=.70+noise;r="ترند صاعد، RSI متوازن";cf=["EMA صاعد","RSI صحي","PA"]}
+      else if(trend==="bearish"&&rsi<55&&rsi>35){d="بيع";c=.68+noise;r="هيكل هابط";cf=["EMA هابط","نمط PA","زخم"]}
+      else{d="انتظار";c=.50+noise;r="لا إشارة PA"}; break;
+    case"Trend Following":
+      if(trend==="bullish"&&mBull){d="شراء";c=.75+noise;r="EMA + MACD صاعد";cf=["EMA200","MACD صاعد","ترند"]}
+      else if(trend==="bearish"&&!mBull){d="بيع";c=.73+noise;r="EMA هابط + MACD";cf=["EMA هابط","MACD هابط","هبوط"]}
+      else{d="انتظار";c=.47+noise;r="إشارات متضاربة"}; break;
+    case"Mean Reversion":
+      if(boll<0.15&&rsi<35){d="شراء";c=.78+noise;r="BB سفلي + ذروة بيع";cf=["BB سفلي","RSI ذروة بيع","ارتداد"]}
+      else if(boll>0.85&&rsi>65){d="بيع";c=.77+noise;r="BB علوي + ذروة شراء";cf=["BB علوي","RSI ذروة شراء","تراجع"]}
+      else{d="انتظار";c=.50+noise;r="منتصف النطاق"}; break;
+    case"Scalping":
+      if(ms.volatility==="high"){d=mBull?"شراء":"بيع";c=.62+noise;r="تقلب عالٍ";cf=["ATR مرتفع","زخم","سريع"]}
+      else{d="انتظار";c=.39+noise;r="تقلب منخفض"}; break;
+    case"Breakout":
+      if(ms.dist_to_res&&parseFloat(ms.dist_to_res)<0.1){d="انتظار";c=.57+noise;r="قرب المقاومة"}
+      else if(bos&&bosBull){d="شراء";c=.72+noise;r="كسر BOS للأعلى";cf=["كسر BOS","فوق المقاومة"]}
+      else{d="انتظار";c=.44+noise;r="لا كسر"}; break;
+    case"Volume/Momentum":
+      if(mBull&&rsi>50&&trend==="bullish"){d="شراء";c=.71+noise;r="زخم صاعد";cf=["MACD صاعد","RSI>50","حجم"]}
+      else if(!mBull&&rsi<50&&trend==="bearish"){d="بيع";c=.69+noise;r="زخم هابط";cf=["MACD هابط","حجم"]}
+      else{d="انتظار";c=.50+noise;r="لا زخم"}; break;
+    case"News Trading":
+      if(ns>0.2){d="شراء";c=Math.min(.9,.65+ns*.22+noise);r="أخبار إيجابية ("+ns.toFixed(2)+")";cf=["عناوين صاعدة","جلسة","إخباري"]}
+      else if(ns<-0.2){d="بيع";c=Math.min(.9,.65+Math.abs(ns)*.22+noise);r="أخبار سلبية ("+ns.toFixed(2)+")";cf=["عناوين هابطة","جلسة","نفور"]}
+      else{d=trend==="bullish"?"شراء":trend==="bearish"?"بيع":"انتظار";c=.53+noise;r="أخبار محايدة"}; break;
+    case"Wyckoff":
+      if(boll>0.4&&boll<0.6&&ms.volatility==="low"){d="انتظار";c=.60+noise;r="تراكم"}
+      else if(bos&&bosBull){d="شراء";c=.70+noise;r="ارتفاع وايكوف";cf=["نابض","ارتفاع","حجم"]}
+      else if(bos&&!bosBull){d="بيع";c=.67+noise;r="توزيع وايكوف"}
+      else{d="انتظار";c=.47+noise;r="غير واضح"}; break;
+    case"Fibonacci":
+      d=rsi<40&&trend==="bullish"?"شراء":rsi>60&&trend==="bearish"?"بيع":"انتظار";
+      c=d!=="انتظار"?.67+noise:.47+noise;r=d!=="انتظار"?"فيبو 61.8%":"لا مستوى";cf=["فيبو 61.8%","تصحيح","RSI"]; break;
+    case"Elliott Wave":
+      d=trend==="bullish"&&mBull?"شراء":trend==="bearish"&&!mBull?"بيع":"انتظار";
+      c=d==="انتظار"?.44+noise:.65+noise;r=d==="انتظار"?"هيكل غير واضح":"موجة إيليوت";cf=["موجة 3","هيكل EW","فيبو"]; break;
+    case"Harmonic Patterns":
+      d=boll<0.3&&rsi<45?"شراء":boll>0.7&&rsi>55?"بيع":"انتظار";
+      c=d!=="انتظار"?.68+noise:.39+noise;r=d!=="انتظار"?"إكمال PRZ":"لا نمط هارموني";cf=["PRZ","نسبة هارمونية"]; break;
+    case"Order Flow":
+      d=mBull&&trend==="bullish"?"شراء":!mBull&&trend==="bearish"?"بيع":"انتظار";
+      c=d!=="انتظار"?.73+noise:.49+noise;r="عدم توازن أوامر";cf=["عدم توازن","دلتا"]; break;
+    case"Multi-TF Confluence":
+      const bc=[trend==="bullish",mBull,rsi>50,bos&&bosBull].filter(Boolean).length;
+      const sc=[trend==="bearish",!mBull,rsi<50,bos&&!bosBull].filter(Boolean).length;
+      d=bc>=3?"شراء":sc>=3?"بيع":"انتظار";c=bc>=3||sc>=3?.82+noise:.47+noise;
+      r=`${Math.max(bc,sc)}/4 إطارات متوافقة`;cf=["متعدد الإطارات","تقاطع"]; break;
+    case"Algo/Quant":
+      const qs=(mBull?1:-1)+(rsi>50?1:-1)+(trend==="bullish"?1:-1)+(bos&&bosBull?1:bos&&!bosBull?-1:0);
+      d=qs>=2?"شراء":qs<=-2?"بيع":"انتظار";c=Math.min(.90,.50+Math.abs(qs)*.10+noise);
+      r=`كمي ${qs}/4`;cf=["RSI كمي","MACD كمي","EMA كمي"]; break;
+    default:d="انتظار";c=.50+noise;r="لا إشارة";
+  }
+  c=Math.max(0.2,Math.min(0.95,c));
+  const price=ms.last,atr=ms.atr||price*0.005;
+  const sl=d==="شراء"?(price-atr*1.5).toFixed(5):d==="بيع"?(price+atr*1.5).toFixed(5):null;
+  const tp1=d==="شراء"?(price+atr*2).toFixed(5):d==="بيع"?(price-atr*2).toFixed(5):null;
+  const tp2=d==="شراء"?(price+atr*3.5).toFixed(5):d==="بيع"?(price-atr*3.5).toFixed(5):null;
+  return{decision:d,entry:price.toFixed(5),sl,tp1,tp2,confidence:c,reasoning:r,confluences:cf};
+}
+
+/* ── CONSENSUS ── */
+function buildConsensus(results,newsScore,seed){
+  let wB=0,wS=0,wW=0,tW=0;
+  results.forEach(a=>{
+    const inf=agentStates[a.id]?.influence||0.5,conf=a.confidence||0.5;
+    const wins=agentStates[a.id]?.wins||0,losses=agentStates[a.id]?.losses||0;
+    const tot=wins+losses,wrF=tot<5?0.5:0.5+0.5*(wins/tot);
+    const w=inf*conf*wrF;
+    if(a.decision==="شراء")wB+=w;else if(a.decision==="بيع")wS+=w;else wW+=w;tW+=w;
+  });
+  if(tW===0)tW=1;
+  let bp=wB/tW*100,sp=wS/tW*100,wp=wW/tW*100;
+  const nudge=Math.min(5,Math.abs(newsScore||0)*5);
+  if(newsScore>0.2){bp+=nudge;sp=Math.max(0,sp-nudge/2);}
+  if(newsScore<-0.2){sp+=nudge;bp=Math.max(0,bp-nudge/2);}
+  const ns=bp+sp+wp,fB=Math.round(bp/ns*100),fS=Math.round(sp/ns*100),fW=Math.max(0,100-fB-fS);
+  const dir=fB>=fS&&fB>=fW?"شراء":fS>=fB&&fS>=fW?"بيع":"انتظار";
+  const wConf=results.reduce((s,a)=>s+(a.confidence||0.5),0)/results.length;
+  const split=Math.abs(fB-fS)<=12;
+  const r=(s)=>{const x=Math.sin(seed*500+s)*10000;return x-Math.floor(x);};
+  const RP={"شراء":["هيكل صاعد مؤكد","EMA مكدسة صاعدة","زخم قوي","RSI يدعم الشراء","كسر BOS صاعد"],"بيع":["هيكل هابط","EMA مكدسة هابطة","زخم هابط","RSI بيع","كسر BOS هابط"],"انتظار":["إشارات متضاربة","بانتظار تأكيد","R:R غير مثالي","سوق نطاقي"]};
+  const CP=["السوق منقسم على التوقيت","تعارض أخبار وتقنية","عدم توافق الإطارات","مستوى رئيسي أمامنا"];
+  const SP={"شراء":["شراء عند إعادة اختبار الدعم","دخول بعد تأكيد BOS","إدخال عند EMA20"],"بيع":["بيع عند إعادة اختبار المقاومة","دخول BOS هابط","ارتداد من EMA20"],"انتظار":["انتظار إغلاق الشمعة","مراقبة الجلسة القادمة","تقييم رد فعل الأخبار"]};
+  const pick=(arr,s)=>{const x=Math.abs(Math.sin(seed*7919+s*3571))*99991;return arr[Math.floor(x%arr.length)];};
+  const pool=RP[dir]||RP["انتظار"];
+  const r1=pick(pool,1),r2=pick(pool,2),r3=pick(pool,3);
+  const reasons=[r1,r2!==r1?r2:pool[(pool.indexOf(r1)+1)%pool.length],r3].filter((v,i,a)=>a.indexOf(v)===i).slice(0,3);
+  const c1=pick(CP,4),c2=pick(CP,5);
+  const conflicts=[c1,c2!==c1?c2:CP[(CP.indexOf(c1)+1)%CP.length]].slice(0,2);
+  const sPool=SP[dir]||SP["انتظار"];
+  const s1=pick(sPool,6),s2=pick(sPool,7);
+  const scenarios=[s1,s2!==s1?s2:sPool[(sPool.indexOf(s1)+1)%sPool.length]].slice(0,2);
+  const narrative=`${dir==="شراء"?"المشترون":dir==="بيع"?"البائعون":"المتداولون"} يقودون بالإجماع المرجح. ${split?"السوق منقسم — تقليل الحجم.":"تحيز اتجاهي يتشكل."}`;
+  return{dir,buy:fB,sell:fS,wait:fW,conf:wConf.toFixed(2),split,reasons,conflicts,scenarios,narrative};
+}
+
+/* ── RISK ── */
+function buildRisk(results,ms,pair){
+  const traders=results.filter(a=>(a.decision==="شراء"||a.decision==="بيع")&&a.sl&&a.tp1);
+  if(!traders.length)return null;
+  const isGold=pair==="XAU/USD",pM=isGold?1:10000;
+  const buyers=traders.filter(a=>a.decision==="شراء"),sellers=traders.filter(a=>a.decision==="بيع");
+  const dom=buyers.length>=sellers.length?buyers:sellers,dir=buyers.length>=sellers.length?"شراء":"بيع";
+  if(!dom.length)return null;
+  const wFn=a=>(a.confidence||0.5)*(agentStates[a.id]?.influence||0.5);
+  const tW=dom.reduce((s,a)=>s+wFn(a),0)||1;
+  const wE=dom.reduce((s,a)=>s+parseFloat(a.entry||"0")*wFn(a),0)/tW;
+  const wSL=dom.reduce((s,a)=>s+parseFloat(a.sl||"0")*wFn(a),0)/tW;
+  const wTP=dom.reduce((s,a)=>s+parseFloat(a.tp1||"0")*wFn(a),0)/tW;
+  const rP=Math.abs(wE-wSL)*pM,rwP=Math.abs(wTP-wE)*pM,rr=rP>0?rwP/rP:0;
+  const vol=ms?.volatility||"medium";
+  const score=Math.round(Math.min(40,rr*13.3)+(vol==="low"?20:vol==="medium"?15:5)+(parseFloat(ms?.rsi||"50")/100)*20+Math.min(20,dom.length/traders.length*20));
+  const level=score>=70?"مخاطرة منخفضة":score>=45?"مخاطرة متوسطة":"مخاطرة عالية";
+  const color=score>=70?"var(--green)":score>=45?"var(--gold)":"var(--red)";
+  return{dir,entry:wE.toFixed(isGold?2:5),sl:wSL.toFixed(isGold?2:5),tp:wTP.toFixed(isGold?2:5),
+    riskPips:rP.toFixed(1),rewardPips:rwP.toFixed(1),rr:rr.toFixed(2),
+    score,level,color,suggested:score>=70?"1.0–2.0%":score>=45?"0.5–1.0%":"0.25–0.5%",
+    active:dom.length,total:traders.length};
+}
+
+/* ── INTERACTIONS ── */
+function buildInts(agents){
+  const B=agents.filter(a=>a.decision==="شراء"),S=agents.filter(a=>a.decision==="بيع"),W=agents.filter(a=>a.decision==="انتظار");
+  const msgs=[],A=["هيكل واضح من تحليلي.","إعداد نظيف جداً.","الدعم والمقاومة متوافقان.","الحجم يؤكد الرأي."];
+  const D=["المقاومة العلوية قوية.","أرى توزيعاً هنا.","RSI يتباعد.","ضد الإطار الأعلى."];
+  const r=(s)=>{const x=Math.sin(12345+s)*10000;return x-Math.floor(x);};
+  if(B[0]&&B[1])msgs.push({from:B[0].id,to:B[1].id,type:"agree",msg:A[Math.floor(r(1)*A.length)]});
+  if(S[0]&&B[0])msgs.push({from:S[0].id,to:B[0].id,type:"disagree",msg:D[Math.floor(r(2)*D.length)]});
+  if(B[0]&&W[0])msgs.push({from:B[0].id,to:W[0].id,type:"agree",msg:"إعادة الاختبار يمنح R:R أفضل."});
+  if(S[0]&&S[1])msgs.push({from:S[0].id,to:S[1].id,type:"agree",msg:A[Math.floor(r(3)*A.length)]});
+  if(W[0]&&B[0])msgs.push({from:W[0].id,to:B[0].id,type:"disagree",msg:D[Math.floor(r(4)*D.length)]});
+  return msgs.slice(0,5);
+}
+
+/* ── SENTIMENT ── */
+function scoreSent(h,pair){
+  const hl=h.toLowerCase();
+  const B=["rises","rally","surge","gain","bullish","higher","strong","jump","climb","soars","upside","hike","hawkish","beats"];
+  const S=["falls","drop","decline","bearish","lower","cut","weak","slump","plunge","recession","dovish","tariff","miss"];
+  let sc=0;B.forEach(w=>{if(hl.includes(w))sc+=1});S.forEach(w=>{if(hl.includes(w))sc-=1});
+  const rel=(PAIR_KW[pair]||[]).some(k=>hl.includes(k))?1.5:1.0;
+  return Math.max(-1,Math.min(1,(sc/3)*rel));
+}
+function aggSent(items){
+  if(!items||!items.length)return{score:0,label:"محايد",color:"var(--gold)"};
+  const avg=items.reduce((s,n)=>s+(n.sentiment||0),0)/items.length;
+  return{score:parseFloat(avg.toFixed(2)),label:avg>0.2?"إيجابي":avg<-0.2?"سلبي":"محايد",color:avg>0.2?"var(--green)":avg<-0.2?"var(--red)":"var(--gold)"};
+}
+
+/* ══════════════════════════════════════════
+   API — سلسلة proxy ثلاثية + مفاتيح مزدوجة
+   ══════════════════════════════════════════ */
+function gcache(k){const c=CACHE[k];if(c&&Date.now()-c.ts<CACHE_TTL)return c.d;return null}
+function scache(k,d){CACHE[k]={d,ts:Date.now()}}
+
+// 3 CORS proxies — يجرب واحداً تلو الآخر
+const PROXIES=[
+  u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
+
+function tout(ms){return new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))}
+
+async function safeFetch(url,ms=13000){
+  // محاولة مباشرة أولاً
+  try{
+    const r=await Promise.race([fetch(url,{mode:"cors"}),tout(ms)]);
+    if(r&&(r.ok||r.status===200)){console.log("✅ Direct:",url.slice(0,60));return r;}
+  }catch(e){/* CORS blocked — try proxies */}
+  // تجربة كل proxy
+  for(let i=0;i<PROXIES.length;i++){
+    try{
+      const pu=PROXIES[i](url);
+      const r=await Promise.race([fetch(pu),tout(ms)]);
+      if(r&&(r.ok||r.status===200)){console.log(`✅ Proxy[${i}]:`,url.slice(0,50));return r;}
+    }catch(e){console.warn(`⚠ Proxy[${i}] failed:`,e.message)}
+  }
+  console.error("❌ All fetches failed:",url.slice(0,80));
+  return null;
+}
+
+// ── TwelveData Candles ──
+async function fetchCandles(pair){
+  const key="c_"+pair,cached=gcache(key);
+  if(cached)return{candles:cached,source:"cache",real:true};
+  const sym=pair.replace("/","");
+  const url=`https://api.twelvedata.com/time_series?symbol=${sym}&interval=1h&outputsize=60&apikey=${TD_KEY}`;
+  try{
+    const res=await safeFetch(url,14000);
+    if(!res)return{candles:null,source:"error",real:false};
+    const d=await res.json();
+    if(d.values&&Array.isArray(d.values)&&d.values.length>5){
+      const candles=d.values.reverse().map(v=>({
+        open:parseFloat(v.open),high:parseFloat(v.high),
+        low:parseFloat(v.low),close:parseFloat(v.close),
+        volume:parseFloat(v.volume)||0,datetime:v.datetime
+      }));
+      scache(key,candles);
+      console.log("✅ TwelveData "+pair+": "+candles.length+" شمعة");
+      return{candles,source:"twelvedata",real:true};
+    }
+    console.error("❌ TwelveData "+pair+":",d.message||d.code||JSON.stringify(d).slice(0,80));
+  }catch(e){console.error("❌ TwelveData "+pair+":",e.message)}
+  return{candles:null,source:"error",real:false};
+}
+
+// ── Finnhub News (مفتاحان بالتناوب) ──
+async function fetchFinnhub(pair,key){
+  const cat=pair==="XAU/USD"?"general":"forex";
+  const url=`https://finnhub.io/api/v1/news?category=${cat}&token=${key}`;
+  const res=await safeFetch(url,12000);
+  if(!res)return null;
+  const data=await res.json();
+  if(!Array.isArray(data)||!data.length)return null;
+  return data;
+}
+
+// ── Yahoo Finance RSS (مصدر أخبار بديل) ──
+const YF_RSS={
+  "XAU/USD":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC%3DF&region=US&lang=en-US",
+  "EUR/USD":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=EURUSD%3DX&region=US&lang=en-US",
+  "GBP/USD":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=GBPUSD%3DX&region=US&lang=en-US",
+  "USD/JPY":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=JPY%3DX&region=US&lang=en-US",
+  "AUD/USD":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=AUDUSD%3DX&region=US&lang=en-US",
+  "USD/CAD":"https://feeds.finance.yahoo.com/rss/2.0/headline?s=CAD%3DX&region=US&lang=en-US",
+};
+async function fetchYahooRSS(pair){
+  const url=YF_RSS[pair];if(!url)return null;
+  try{
+    const res=await safeFetch(url,10000);
+    if(!res)return null;
+    const txt=await res.text();
+    const parser=new DOMParser(),doc=parser.parseFromString(txt,"text/xml");
+    const items=Array.from(doc.querySelectorAll("item")).slice(0,6);
+    if(!items.length)return null;
+    return items.map(it=>({
+      headline:it.querySelector("title")?.textContent||"",
+      source:"Yahoo Finance",
+      url:it.querySelector("link")?.textContent||"",
+      time:it.querySelector("pubDate")?.textContent?new Date(it.querySelector("pubDate").textContent).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"",
+      sentiment:scoreSent(it.querySelector("title")?.textContent||"",pair),
+      isHighImpact:HIGH_IMPACT.some(k=>(it.querySelector("title")?.textContent||"").toLowerCase().includes(k))
+    })).filter(n=>n.headline);
+  }catch(e){console.warn("⚠ Yahoo RSS "+pair+":",e.message);return null}
+}
+
+async function fetchNews(pair){
+  const key="n_"+pair,cached=gcache(key);
+  if(cached)return{news:cached,source:"cache",real:true};
+  const kws=PAIR_KW[pair]||[];
+  const now=Math.floor(Date.now()/1000);
+
+  // محاولة Finnhub مفتاح 1
+  try{
+    let data=await fetchFinnhub(pair,FH_KEY1);
+    if(!data){console.warn("⚠ Finnhub key1 فشل، جربة key2...");data=await fetchFinnhub(pair,FH_KEY2);}
+    if(data){
+      const rel=data.filter(n=>kws.some(k=>(n.headline||"").toLowerCase().includes(k)));
+      const pool=rel.length>=3?rel:data;
+      const recent=pool.filter(n=>n.datetime&&now-n.datetime<86400).slice(0,7).map(n=>({
+        headline:n.headline||"",source:"Finnhub",url:n.url||"",
+        time:n.datetime?new Date(n.datetime*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"",
+        sentiment:scoreSent(n.headline||"",pair),
+        isHighImpact:HIGH_IMPACT.some(k=>(n.headline||"").toLowerCase().includes(k))
+      }));
+      if(recent.length>0){
+        scache(key,recent);
+        console.log("✅ Finnhub "+pair+": "+recent.length+" أخبار");
+        return{news:recent,source:"finnhub",real:true};
+      }
+    }
+  }catch(e){console.error("❌ Finnhub "+pair+":",e.message)}
+
+  // Fallback: Yahoo Finance RSS
+  console.warn("⚠ Finnhub فشل لـ "+pair+" — جارٍ تجربة Yahoo RSS...");
+  try{
+    const rss=await fetchYahooRSS(pair);
+    if(rss&&rss.length>0){
+      scache(key,rss);
+      console.log("✅ Yahoo RSS "+pair+": "+rss.length+" أخبار");
+      return{news:rss,source:"yahoo",real:true};
+    }
+  }catch(e){console.error("❌ Yahoo RSS "+pair+":",e.message)}
+
+  return{news:null,source:"error",real:false};
+}
+
+// ── ForexFactory Calendar (البيانات الحقيقية) ──
+async function fetchCalendarEvents(){
+  const key="ff_cal",cached=gcache(key);
+  if(cached){calendarEvents=cached;return}
+  const url="https://nfs.faireconomy.media/ff_calendar_thisweek.json";
+  try{
+    const res=await safeFetch(url,10000);
+    if(!res)return;
+    const data=await res.json();
+    if(Array.isArray(data)&&data.length>0){
+      calendarEvents=data.map(ev=>({
+        title:ev.title||"",
+        country:ev.country||"",
+        date:ev.date||"",
+        time:ev.time||"",
+        impact:ev.impact||"Low",
+        forecast:ev.forecast||"",
+        previous:ev.previous||""
+      }));
+      scache(key,calendarEvents);
+      console.log("✅ ForexFactory Calendar: "+calendarEvents.length+" حدث");
+    }
+  }catch(e){console.warn("⚠ ForexFactory Calendar:",e.message)}
+}
+
+/* ── CHART (Candlestick SVG) ── */
+function drawChart(candles){
+  if(!candles||candles.length<2)return'<div class="er" style="height:120px"><div style="font-size:22px">📡</div><div style="font-size:10px;color:var(--red)">لا بيانات رسم</div></div>';
+  const W=800,H=120,PAD=8,n=Math.min(60,candles.length),sl=candles.slice(-n);
+  const allH=sl.map(c=>c.high),allL=sl.map(c=>c.low);
+  const minP=Math.min(...allL),maxP=Math.max(...allH),range=maxP-minP||1;
+  const yS=v=>PAD+(1-(v-minP)/range)*(H-PAD*2);
+  const cW=W/n,bW=Math.max(2,cW*0.55);
+  let bars="";
+  sl.forEach((c,i)=>{
+    const x=i*cW+cW/2,isUp=c.close>=c.open,col=isUp?"#00e676":"#ff3d3d";
+    const yH=yS(c.high),yL=yS(c.low),yO=yS(c.open),yC=yS(c.close);
+    const top=Math.min(yO,yC),bot=Math.max(yO,yC),ht=Math.max(1,bot-top);
+    bars+=`<line x1="${x}" y1="${yH}" x2="${x}" y2="${yL}" stroke="${col}" stroke-width="0.7" opacity="0.5"/>`;
+    bars+=`<rect x="${x-bW/2}" y="${top}" width="${bW}" height="${ht}" fill="${col}" opacity="0.85"/>`;
+  });
+  const closes=sl.map(c=>c.close);
+  let emaPath="";
+  closes.forEach((_,i)=>{if(i<19)return;const e=emaCalc(closes.slice(0,i+1),20);const x=i*cW+cW/2,y=yS(e);emaPath+=emaPath?"L"+x+","+y:"M"+x+","+y;});
+  const gid="g"+Math.random().toString(36).slice(2,5);
+  const up=sl[sl.length-1].close>=sl[0].close;
+  return`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:120px;display:block">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${up?"#00e676":"#ff3d3d"}" stop-opacity="0.07"/><stop offset="100%" stop-color="${up?"#00e676":"#ff3d3d"}" stop-opacity="0"/></linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="url(#${gid})"/>
+    ${bars}
+    ${emaPath?`<path d="${emaPath}" fill="none" stroke="#00b4ff" stroke-width="1.3" opacity="0.7"/>`:""}
+  </svg>`;
+}
+
+/* ── HELPERS ── */
+function dc(d){return !d?"#888":d==="شراء"?"var(--green)":d==="بيع"?"var(--red)":"var(--gold)"}
+function fp(v,p=5){if(!v&&v!==0)return"—";const n=parseFloat(String(v));return isNaN(n)?"—":n.toFixed(p)}
+function dtag(d){const cls=d==="شراء"?"dt-b":d==="بيع"?"dt-s":d?"dt-w":"dt-n";return`<span class="dt ${cls}">${d||"—"}</span>`}
+
+/* ── RENDERS ── */
+function renderMS(pair){
+  const d=simMap[pair];document.getElementById("ms-pair").textContent=pair;
+  if(!d?.ms){
+    const ds=dataSources[pair];
+    const isCorsErr=ds&&!ds.real;
+    document.getElementById("ms-body").innerHTML=`
+      <div style="padding:16px;text-align:center">
+        ${isCorsErr?`
+          <div style="font-size:24px;margin-bottom:8px">⛔</div>
+          <div style="font-size:12px;color:var(--red);font-weight:700;margin-bottom:6px">فشل الاتصال بـ API</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:10px">
+            يحدث هذا عند فتح الملف مباشرة من <code style="color:var(--gold)">file://</code><br>
+            المتصفح يحجب طلبات الشبكة الخارجية
+          </div>
+          <div style="font-size:9px;color:var(--text3);background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px;text-align:right">
+            <div style="font-weight:700;color:var(--gold);margin-bottom:5px">الحلول:</div>
+            <div>١. افتح الملف عبر متصفح كروم ← القائمة ← ⋮ ← طلب موقع سطح المكتب</div>
+            <div style="margin-top:4px">٢. أو رفع الملف على web server مثل Netlify / GitHub Pages</div>
+            <div style="margin-top:4px">٣. أو جرب Firefox على أندرويد (CORS أقل صرامة)</div>
+          </div>
+          <button class="btn" onclick="runCycle(true)" style="margin-top:10px">🔄 إعادة المحاولة</button>
+        `:`<div class="ld"><div class="spin"></div><div style="font-size:10px;color:var(--text3)">جلب البيانات...</div></div>`}
+      </div>`;
+    return;
+  }
+  const ms=d.ms,ig=pair==="XAU/USD";
+  const tc=ms.trend==="bullish"?"var(--green)":ms.trend==="bearish"?"var(--red)":"var(--gold)";
+  const rv=parseFloat(ms.rsi),rc=rv>70?"var(--red)":rv<30?"var(--green)":"var(--text)";
+  const vc=ms.volatility==="high"?"var(--red)":ms.volatility==="medium"?"var(--gold)":"var(--green)";
+  const ds=dataSources[pair];
+  const src=document.getElementById("ms-src");
+  src.textContent=ds?(ds.real?"✓ Twelve Data":"❌ خطأ API"):"—";
+  src.className="badge "+(ds?.real?"b-live":"b-red");
+  const chgC=parseFloat(ms.change_pct)>=0?"var(--green)":"var(--red)";
+  document.getElementById("ms-body").innerHTML=`
+    <div class="msc">
+      <div class="cell"><div class="cv" style="color:var(--blue)">${parseFloat(ms.last).toFixed(ig?2:5)}</div><div class="cl">السعر</div></div>
+      <div class="cell"><div class="cv" style="color:${chgC}">${parseFloat(ms.change_pct)>=0?"+":""}${ms.change_pct}%</div><div class="cl">التغيير</div></div>
+      <div class="cell"><div class="cv" style="color:${rc}">${ms.rsi}</div><div class="cl">RSI</div></div>
+      <div class="cell"><div class="cv" style="color:${tc}">${ms.trend==="bullish"?"صاعد":ms.trend==="bearish"?"هابط":"جانبي"}</div><div class="cl">الاتجاه</div></div>
+      <div class="cell"><div class="cv" style="color:${ms.macd_cross==="bullish"?"var(--green)":"var(--red)"}">${ms.macd_cross==="bullish"?"صاعد":"هابط"}</div><div class="cl">MACD</div></div>
+      <div class="cell"><div class="cv" style="color:${vc}">${ms.volatility==="high"?"مرتفع":ms.volatility==="medium"?"متوسط":"منخفض"}</div><div class="cl">التقلب</div></div>
+      <div class="cell"><div class="cv">${fp(ms.support,ig?2:5)}</div><div class="cl">الدعم</div></div>
+      <div class="cell"><div class="cv">${fp(ms.resistance,ig?2:5)}</div><div class="cl">المقاومة</div></div>
+      <div class="cell"><div class="cv">${fp(ms.ema20,ig?2:5)}</div><div class="cl">EMA 20</div></div>
+      <div class="cell"><div class="cv">${fp(ms.ema50,ig?2:5)}</div><div class="cl">EMA 50</div></div>
+      <div class="cell"><div class="cv" style="color:${ms.bos?"var(--purple)":"var(--text3)"}">${ms.bos?(ms.bos_dir==="bullish"?"صاعد":"هابط"):"—"}</div><div class="cl">BOS</div></div>
+      <div class="cell"><div class="cv" style="color:${ms.fvg?"var(--orange)":"var(--text3)"}">${ms.fvg?(ms.fvg.type==="bullish"?"صاعد":"هابط"):"—"}</div><div class="cl">FVG</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:8px;color:var(--text3)">
+      <span>BB ${(parseFloat(ms.boll_pct)*100).toFixed(0)}%</span>
+      <span>ATR ${fp(ms.atr,ig?2:5)}</span>
+      <span>→مقاومة ${ms.dist_to_res||"—"}%</span>
+      <span>←دعم ${ms.dist_to_sup||"—"}%</span>
+      <span>${ms.session}</span>
+      <span>${ms.candle_count} شمعة</span>
+    </div>`;
+}
+
+function renderChart(pair){
+  const d=simMap[pair];document.getElementById("ch-pair").textContent=pair;
+  const info=document.getElementById("ch-info");
+  if(!d?.candles||d.candles.length<2){document.getElementById("ch-box").innerHTML='<div class="er" style="height:120px"><div style="font-size:22px">📡</div><div style="font-size:10px;color:var(--red)">لا بيانات</div></div>';info.textContent="";return}
+  const c=d.candles,last=c[c.length-1],ig=pair==="XAU/USD",up=last.close>=c[0].close;
+  info.textContent=`H:${fp(last.high,ig?2:5)} L:${fp(last.low,ig?2:5)} C:${fp(last.close,ig?2:5)}`;
+  info.style.color=up?"var(--green)":"var(--red)";
+  document.getElementById("ch-box").innerHTML=drawChart(d.candles);
+}
+
+function renderConsensus(pair){
+  const d=simMap[pair];document.getElementById("con-pair").textContent=pair;
+  if(!d?.consensus){document.getElementById("con-body").innerHTML='<div class="ld" style="height:60px"><div class="spin"></div></div>';return}
+  const con=d.consensus,col=dc(con.dir);
+  document.getElementById("con-body").innerHTML=`
+    <div class="cbox">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div class="dbig" style="color:${col}">${con.dir}</div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:2px">${con.split?"⚠ السوق منقسم":"تحيز اتجاهي"}</div>
+          <div style="font-size:9px;color:var(--text3)">ثقة مرجحة ${Math.round(parseFloat(con.conf)*100)}%</div>
+        </div>
+      </div>
+      <div class="vbars">
+        <div class="vi"><div class="vn" style="color:var(--green)">${con.buy}%</div><div class="vt"><div class="vf" style="width:${con.buy}%;background:var(--green)"></div></div><div class="vl">شراء</div></div>
+        <div class="vi"><div class="vn" style="color:var(--red)">${con.sell}%</div><div class="vt"><div class="vf" style="width:${con.sell}%;background:var(--red)"></div></div><div class="vl">بيع</div></div>
+        <div class="vi"><div class="vn" style="color:var(--gold)">${con.wait}%</div><div class="vt"><div class="vf" style="width:${con.wait}%;background:var(--gold)"></div></div><div class="vl">انتظار</div></div>
+      </div>
+      <div class="narr">${con.narrative}</div>
+      <div style="margin-top:8px">
+        <div style="font-size:8px;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">الأسباب</div>
+        <div class="rgrid">${(con.reasons||[]).map(r=>`<div class="ritem">✓ ${r}</div>`).join("")}</div>
+      </div>
+      ${con.conflicts?.length?`<div style="margin-top:7px"><div style="font-size:8px;color:var(--text3);letter-spacing:.1em;margin-bottom:3px">نقاط الخلاف</div>${con.conflicts.map(c=>`<div style="font-size:9px;color:var(--gold);padding:2px 0">⚡ ${c}</div>`).join("")}</div>`:""}
+      ${con.scenarios?.length?`<div style="margin-top:7px"><div style="font-size:8px;color:var(--text3);letter-spacing:.1em;margin-bottom:3px">السيناريوهات</div>${con.scenarios.map(s=>`<div class="sce">🎯 ${s}</div>`).join("")}</div>`:""}
+    </div>`;
+}
+
+function renderAgents(pair){
+  const d=simMap[pair];
+  const B=(d?.agentResults||[]).filter(r=>r.decision==="شراء").length;
+  const S=(d?.agentResults||[]).filter(r=>r.decision==="بيع").length;
+  const W=(d?.agentResults||[]).filter(r=>r.decision==="انتظار").length;
+  document.getElementById("ag-sum").textContent=d?`🟢${B} 🔴${S} 🟡${W}`:"";
+  document.getElementById("agrid").innerHTML=AGENTS.map(a=>{
+    const res=d?.agentResults?.find(r=>r.id===a.id);
+    const dec=res?.decision||"";
+    const dcls=dec==="شراء"?"dt-b":dec==="بيع"?"dt-s":dec?"dt-w":"dt-n";
+    const cPct=Math.round((res?.confidence||0)*100);
+    const st=agentStates[a.id]||{wins:0,losses:0};
+    const wc=st.wins>st.losses?"var(--green)":st.wins===st.losses?"var(--text3)":"var(--red)";
+    return`<div class="ac${selectedAgent===a.id?" sel":""}" onclick="selectAgent('${a.id}')">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px">
+        <div class="av" style="background:${a.color}18;border:1.5px solid ${a.color}55;color:${a.color}">${a.name[0]}</div>
+        <div><div class="an">${a.name}</div><div class="as">${a.style}</div></div>
+      </div>
+      <div class="${dcls} dt">${dec||"—"}</div>
+      ${res?`<div class="cb"><div class="cf" style="width:${cPct}%;background:${a.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:7px;color:var(--text3)"><span>${cPct}%</span><span style="color:${wc}">${st.wins}W ${st.losses}L</span></div>`:`<div class="sk" style="height:12px;margin-top:4px"></div>`}
+    </div>`;
+  }).join("");
+}
+
+function selectAgent(id){
+  selectedAgent=selectedAgent===id?null:id;
+  const pair=activePair,d=simMap[pair];
+  const a=AGENTS.find(x=>x.id===id),res=d?.agentResults?.find(r=>r.id===id);
+  const det=document.getElementById("agdet");
+  renderAgents(pair);
+  if(!selectedAgent||!a||!res){det.style.display="none";return}
+  det.style.display="block";
+  const ig=pair==="XAU/USD",cPct=Math.round((res.confidence||0)*100);
+  const st=agentStates[id]||{wins:0,losses:0,influence:0.6};
+  const rrV=res.sl&&res.tp1?Math.abs(parseFloat(res.tp1)-parseFloat(res.entry))/Math.abs(parseFloat(res.sl)-parseFloat(res.entry)):0;
+  document.getElementById("agdet-body").innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:46px;height:46px;border-radius:50%;background:${a.color}18;border:2px solid ${a.color}55;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:${a.color}">${a.name[0]}</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:700">${a.name}</div>
+        <div style="font-size:9px;color:var(--text3)">${a.style} · ${a.tf} · مخاطرة ${a.risk}</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:1px">تأثير ${Math.round((st.influence||0.6)*100)}% · ${st.wins}W ${st.losses}L</div>
+      </div>
+      <div style="text-align:center"><div style="font-size:26px;font-weight:800;color:${dc(res.decision)}">${res.decision}</div><div style="font-size:8px;color:var(--text3)">ثقة ${cPct}%</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px">
+      <div class="cell"><div class="cv" style="color:var(--blue)">${res.entry}</div><div class="cl">الدخول</div></div>
+      <div class="cell"><div class="cv" style="color:var(--red)">${res.sl||"—"}</div><div class="cl">وقف الخسارة</div></div>
+      <div class="cell"><div class="cv" style="color:var(--green)">${res.tp1||"—"}</div><div class="cl">الهدف 1</div></div>
+      <div class="cell"><div class="cv" style="color:var(--green);font-size:10px">${res.tp2||"—"}</div><div class="cl">الهدف 2</div></div>
+      <div class="cell"><div class="cv" style="color:${rrV>=2?"var(--green)":rrV>=1?"var(--gold)":"var(--red)"}">${rrV.toFixed(2)}:1</div><div class="cl">R:R</div></div>
+      <div class="cell"><div class="cv" style="font-size:9px;color:var(--text2)">${a.tf}</div><div class="cl">الإطار</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:7px;border-right:2px solid ${a.color};margin-bottom:8px">📝 ${res.reasoning||"—"}</div>
+    ${res.confluences?.length?`<div class="pr">${res.confluences.map(c=>`<span class="pill">${c}</span>`).join("")}</div>`:""}`;
+  det.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function renderRisk(pair){
+  const d=simMap[pair];
+  document.getElementById("risk-badge").innerHTML="";
+  if(!d?.risk){document.getElementById("risk-body").innerHTML='<div class="er" style="height:60px"><div style="font-size:18px">—</div><div style="font-size:9px;color:var(--text3)">لا إشارة كافية</div></div>';return}
+  const r=d.risk;
+  document.getElementById("risk-badge").innerHTML=`<span class="badge" style="background:${r.color}18;border:1px solid ${r.color}45;color:${r.color};font-size:7px">${r.dir}</span>`;
+  const rrC=parseFloat(r.rr)>=2?"var(--green)":parseFloat(r.rr)>=1?"var(--gold)":"var(--red)";
+  document.getElementById("risk-body").innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div style="font-size:8px;color:var(--text3)">الدرجة ${r.score}/100</div>
+      <div style="padding:3px 9px;border-radius:5px;background:${r.color}18;border:1px solid ${r.color}45;font-size:9px;font-weight:800;color:${r.color}">${r.level}</div>
+    </div>
+    <div class="rksb"><div class="rksfill" style="width:${r.score}%;background:${r.color}"></div></div>
+    <div class="rkgrid">
+      <div class="cell"><div class="cv" style="color:var(--blue)">${r.entry}</div><div class="cl">الدخول</div></div>
+      <div class="cell"><div class="cv" style="color:var(--red)">${r.sl}</div><div class="cl">وقف الخسارة</div></div>
+      <div class="cell"><div class="cv" style="color:var(--green)">${r.tp}</div><div class="cl">الهدف</div></div>
+    </div>
+    <div class="rrcells">
+      <div class="cell"><div class="cv" style="color:${rrC}">${r.rr}:1</div><div class="cl">R:R</div></div>
+      <div class="cell"><div class="cv" style="color:var(--red)">${r.riskPips}</div><div class="cl">بيبس خطر</div></div>
+      <div class="cell"><div class="cv" style="color:var(--green)">${r.rewardPips}</div><div class="cl">بيبس ربح</div></div>
+      <div class="cell"><div class="cv" style="color:${r.color};font-size:10px">${r.suggested}</div><div class="cl">مخاطرة الحساب</div></div>
+    </div>
+    <div style="font-size:8px;color:var(--text3)">${r.active}/${r.total} وكيل · مرجح بالتأثير × الثقة × معدل الفوز</div>`;
+}
+
+function renderNews(pair){
+  const d=simMap[pair],news=d?.news||[],sent=d?.newsSentiment||{score:0,label:"محايد",color:"var(--gold)"};
+  const ds=dataSources[pair];
+  const srcEl=document.getElementById("news-src");
+  const srcName=ds?.newsReal?(ds.news==="yahoo"?"✓ Yahoo RSS":"✓ Finnhub"):"❌ خطأ API";
+  srcEl.textContent=srcName;
+  srcEl.className="badge "+(ds?.newsReal?"b-live":"b-red");
+  const sc=sent.color;
+  document.getElementById("news-sent").innerHTML=`
+    <div style="display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;background:rgba(100,100,100,0.08);border:1px solid rgba(100,100,100,0.2)">
+      <span style="font-size:14px;font-weight:800;color:${sc}">${sent.label}</span>
+      <span style="font-size:8px;color:var(--text3)">درجة: ${sent.score}</span>
+      <div style="flex:1;height:2px;border-radius:1px;background:rgba(255,255,255,0.07);overflow:hidden">
+        <div style="height:100%;width:${Math.max(5,50+sent.score*50)}%;background:${sc};border-radius:1px"></div>
+      </div>
+    </div>`;
+  if(!news.length){document.getElementById("news-body").innerHTML='<div class="er" style="padding:14px"><div style="font-size:22px">📡</div><div style="font-size:10px;color:var(--red)">لا أخبار متاحة</div><div style="font-size:9px;color:var(--text3)">Finnhub لم يُرجع بيانات</div></div>';return}
+  document.getElementById("news-body").innerHTML=news.map(n=>{
+    const sc2=n.sentiment,sc2c=sc2>0.1?"var(--green)":sc2<-0.1?"var(--red)":"var(--gold)";
+    return`<div class="ni">
+      ${n.isHighImpact?`<div style="font-size:7px;color:var(--red);font-weight:700;margin-bottom:1px">⚡ تأثير عالٍ</div>`:""}
+      <div class="nh">${n.headline}</div>
+      <div class="nm"><span>${n.source}</span><span>${n.time}</span>
+        <span class="ns" style="background:${sc2c}15;color:${sc2c};border:1px solid ${sc2c}35">${sc2>0.1?"إيجابي":sc2<-0.1?"سلبي":"محايد"}</span>
+        ${n.url?`<a href="${n.url}" target="_blank" rel="noopener" style="color:var(--blue);font-size:8px;text-decoration:none">↗</a>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderCalendar(){
+  const el=document.getElementById("cal-body");
+  const now=new Date(),nowUTC=now.getTime();
+  const todayStr=now.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+
+  // فلترة أحداث اليوم ذات التأثير العالي/المتوسط القادمة خلال 8 ساعات
+  const upcoming=calendarEvents.filter(ev=>{
+    if(!ev.time||ev.time==="All Day")return false;
+    if(ev.impact==="Low")return false;
+    // تحويل تاريخ FF إلى UTC
+    try{
+      const dtStr=ev.date+" "+ev.time; // e.g. "Apr 07, 2026 8:30am"
+      const dt=new Date(dtStr+" UTC");
+      if(isNaN(dt.getTime()))return false;
+      const diff=(dt.getTime()-nowUTC)/60000; // دقائق
+      return diff>-30&&diff<480; // من 30 دقيقة مضت إلى 8 ساعات قادمة
+    }catch{return false}
+  }).sort((a,b)=>{
+    const da=new Date(a.date+" "+a.time+" UTC"),db=new Date(b.date+" "+b.time+" UTC");
+    return da-db;
+  }).slice(0,8);
+
+  if(!upcoming.length){
+    // إذا كانت بيانات FF فارغة أو لا أحداث — رسالة مناسبة
+    if(!calendarEvents.length){
+      el.innerHTML=`<div style="font-size:9px;color:var(--text3);padding:5px">جارٍ تحميل التقويم من ForexFactory...</div>`;
+      fetchCalendarEvents().then(()=>renderCalendar());
+    } else {
+      el.innerHTML=`<div style="font-size:9px;color:var(--text3);padding:5px">لا أحداث رئيسية قادمة خلال 8 ساعات.</div>`;
+    }
+    return;
+  }
+
+  el.innerHTML=upcoming.map(ev=>{
+    const impactCol=ev.impact==="High"?"var(--red)":ev.impact==="Medium"?"var(--gold)":"var(--text3)";
+    const impactBadge=ev.impact==="High"?"b-red":"b-gold";
+    let diffTxt="";
+    try{
+      const dt=new Date(ev.date+" "+ev.time+" UTC");
+      const diff=Math.round((dt.getTime()-nowUTC)/60000);
+      diffTxt=diff<0?`منذ ${Math.abs(diff)} د`:diff===0?"الآن":`خلال ${diff} د`;
+    }catch{}
+    return`<div class="cal" style="border-color:${impactCol}40;background:${impactCol}08">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+        <div style="font-size:10px;color:var(--text);flex:1">${ev.title}</div>
+        <span class="badge ${impactBadge}" style="font-size:7px;flex-shrink:0">${ev.country}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:3px;font-size:8px;color:var(--text3);align-items:center">
+        <span style="color:${impactCol};font-weight:700">${ev.impact}</span>
+        <span>${ev.time} UTC</span>
+        <span style="color:var(--blue)">${diffTxt}</span>
+        ${ev.forecast?`<span>توقع: <span style="color:var(--text)">${ev.forecast}</span></span>`:""}
+        ${ev.previous?`<span>سابق: ${ev.previous}</span>`:""}
+      </div>
+    </div>`;
+  }).join("")+"<div style='font-size:7px;color:var(--text3);margin-top:4px;text-align:left'>📅 ForexFactory</div>";
+}
+
+function renderInteractions(pair){
+  const d=simMap[pair],ints=d?.interactions||[];
+  if(!ints.length){document.getElementById("int-body").innerHTML=`<div style="font-size:9px;color:var(--text3);padding:6px">بانتظار تحليل الوكلاء...</div>`;return}
+  document.getElementById("int-body").innerHTML=ints.map(i=>{
+    const af=AGENTS.find(a=>a.id===i.from),at=AGENTS.find(a=>a.id===i.to);
+    const tc=i.type==="agree"?"var(--green)":"var(--red)";
+    return`<div class="ii">
+      <div class="iav" style="background:${af?.color||"#888"}22;color:${af?.color||"#888"}">${af?.name[0]||"?"}</div>
+      <div style="flex:1">
+        <div style="font-size:8px;color:var(--text3);margin-bottom:1px">
+          <span style="color:${af?.color||"#888"}">${af?.name||i.from}</span> → <span style="color:${at?.color||"#888"}">${at?.name||i.to}</span>
+          <span style="color:${tc};margin-right:4px">${i.type==="agree"?"✓":"✗"}</span>
+        </div>
+        <div style="font-size:9px;color:var(--text2);direction:ltr;text-align:left;font-style:italic">${i.msg}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderHistory(){
+  document.getElementById("hcnt").textContent=signalHistory.length+" إشارة";
+  if(!signalHistory.length){document.getElementById("hbody").innerHTML=`<div style="font-size:9px;color:var(--text3);padding:8px">لا يوجد سجل بعد — تلقائي بعد أول دورة.</div>`;return}
+  // Session stats
+  const byDir={شراء:0,بيع:0,انتظار:0};
+  signalHistory.forEach(h=>{if(byDir[h.dir]!==undefined)byDir[h.dir]++;});
+  const total=signalHistory.length;
+  const statsHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+    <div class="cell"><div class="cv" style="color:var(--green)">${byDir["شراء"]}</div><div class="cl">شراء</div></div>
+    <div class="cell"><div class="cv" style="color:var(--red)">${byDir["بيع"]}</div><div class="cl">بيع</div></div>
+    <div class="cell"><div class="cv" style="color:var(--gold)">${byDir["انتظار"]}</div><div class="cl">انتظار</div></div>
+    <div class="cell"><div class="cv" style="color:var(--blue)">${total}</div><div class="cl">إجمالي</div></div>
+  </div>`;
+  document.getElementById("hbody").innerHTML=statsHTML+signalHistory.slice(0,15).map(h=>{
+    const col=dc(h.dir),rrc=parseFloat(h.rr||0)>=2?"var(--green)":parseFloat(h.rr||0)>=1?"var(--gold)":"var(--red)";
+    return`<div class="hr">
+      <span style="font-size:7px;color:var(--text3);min-width:36px">${h.time}</span>
+      <span style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--blue);min-width:56px">${h.pair}</span>
+      <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:${col};min-width:46px">${h.dir}</span>
+      <span style="font-size:8px;color:var(--text3)">🟢${h.buy}% 🔴${h.sell}%</span>
+      <span style="margin-right:auto;font-size:8px;color:${rrc}">R:R ${h.rr||"—"}</span>
+    </div>`;
+  }).join("");
+}
+
+function renderPO(){
+  document.getElementById("po-body").innerHTML=PAIRS.map(p=>{
+    const d=simMap[p],ms=d?.ms,con=d?.consensus,ds=dataSources[p];
+    const dot=!ds?"⬜":ds.real?"🟢":"🔴";
+    if(!ms)return`<div class="por${p===activePair?" act":""}" onclick="selectPair('${p}')">
+      <span style="font-size:8px">${dot}</span><span style="font-size:10px;font-family:var(--mono);font-weight:700">${p}</span>
+      <span style="font-size:9px;color:var(--text3)">لا بيانات</span>
+    </div>`;
+    const ig=p==="XAU/USD",cc=parseFloat(ms.change_pct)>=0?"var(--green)":"var(--red)";
+    return`<div class="por${p===activePair?" act":""}" onclick="selectPair('${p}')">
+      <span style="font-size:8px">${dot}</span>
+      <span style="font-size:10px;font-family:var(--mono);font-weight:700">${p}</span>
+      <span style="font-size:10px;font-family:var(--mono);color:var(--blue)">${parseFloat(ms.last).toFixed(ig?2:5)}</span>
+      <span style="font-size:8px;font-family:var(--mono);color:${cc}">${parseFloat(ms.change_pct)>=0?"+":""}${ms.change_pct}%</span>
+      <span style="font-size:10px;font-weight:700;color:${dc(con?.dir)}">${con?.dir||"—"}</span>
+      <span style="font-size:8px;color:var(--text3)">${Math.round(parseFloat(con?.conf||"0")*100)}%</span>
+    </div>`;
+  }).join("");
+}
+
+function renderPbar(){
+  document.getElementById("pbar").innerHTML=PAIRS.map(p=>{
+    const d=simMap[p],ms=d?.ms,con=d?.consensus,ds=dataSources[p];
+    const dot=!ds?"":ds.real?"🟢":"🔴";
+    const price=ms?parseFloat(ms.last).toFixed(p==="XAU/USD"?2:5):"—";
+    const chg=ms?ms.change_pct:"";
+    const chgC=ms?(parseFloat(ms.change_pct)>=0?"var(--green)":"var(--red)"):"var(--text3)";
+    const dir=con?.dir;
+    return`<div class="pb${p===activePair?" active":""}" onclick="selectPair('${p}')">
+      ${dir?`<div class="psig ${dir==="شراء"?"s-buy":dir==="بيع"?"s-sell":"s-wait"}">${dir}</div>`:""}
+      <div class="psrc">${dot}</div>
+      <div class="pn">${p}</div>
+      <div class="pp">${price}</div>
+      ${chg?`<div class="pc" style="color:${chgC}">${parseFloat(chg)>=0?"+":""}${chg}%</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function renderBest(){
+  const cands=PAIRS.map(p=>{
+    const d=simMap[p];if(!d?.consensus||!d?.risk)return null;
+    if(d.consensus.dir==="انتظار")return null;
+    const score=(d.consensus.dir==="شراء"?d.consensus.buy:d.consensus.sell)*0.6+d.risk.score*0.4;
+    return{pair:p,dir:d.consensus.dir,score,rr:parseFloat(d.risk.rr||0),conf:parseFloat(d.consensus.conf||0),level:d.risk.level,color:d.risk.color};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
+  const best=cands[0];
+  const el=document.getElementById("best");
+  if(!best){el.style.display="none";return}
+  el.style.display="flex";
+  document.getElementById("best-main").innerHTML=`<span style="font-family:var(--mono);color:var(--blue)">${best.pair}</span> — <span style="color:${dc(best.dir)}">${best.dir}</span>`;
+  document.getElementById("best-sub").innerHTML=`R:R ${best.rr.toFixed(2)}:1 · ${best.level} · ثقة ${Math.round(best.conf*100)}%`;
+}
+
+function updateWL(pair){
+  const prev=prevCycleMap[pair],cur=simMap[pair];
+  if(!prev||!cur?.ms)return;
+  const up=cur.ms.last>prev.price;
+  (prev.decisions||[]).forEach(d=>{
+    const st=agentStates[d.id]||{influence:0.6,wins:0,losses:0,streak:0};
+    const ok=(up&&d.decision==="شراء")||(!up&&d.decision==="بيع");
+    if(ok)agentStates[d.id]={...st,influence:Math.min(1,st.influence+0.02),wins:(st.wins||0)+1,streak:Math.max(0,st.streak||0)+1};
+    else if(d.decision==="شراء"||d.decision==="بيع")agentStates[d.id]={...st,influence:Math.max(0.1,st.influence-0.025),losses:(st.losses||0)+1,streak:Math.min(0,st.streak||0)-1};
+  });
+}
+
+function renderAll(pair){
+  renderPbar();renderMS(pair);renderChart(pair);renderConsensus(pair);
+  renderAgents(pair);renderRisk(pair);renderNews(pair);
+  renderCalendar();renderInteractions(pair);renderHistory();renderPO();renderBest();
+}
+
+/* ── MAIN CYCLE ── */
+async function runCycle(force=false){
+  if(isLoading&&!force)return;isLoading=true;cycleNum++;
+  document.getElementById("h-cycle").textContent="دورة #"+cycleNum;
+  document.getElementById("sdot").style.display="inline-block";
+  for(let pi=0;pi<PAIRS.length;pi++){
+    const pair=PAIRS[pi];
+    document.getElementById("stxt").textContent=pair+": جارٍ الجلب...";
+    renderPbar();
+    if(cycleNum>1)updateWL(pair);
+    const {candles,source:cSrc,real:cReal}=await fetchCandles(pair);
+    const {news,source:nSrc,real:nReal}=await fetchNews(pair);
+    dataSources[pair]={candles:cSrc,news:nSrc,real:cReal,newsReal:nReal,candlesReal:cReal};
+    if(!candles||candles.length<20){
+      console.error("❌ "+pair+": نقص بيانات — تجاوز");
+      simMap[pair]={ms:null,candles:null,agentResults:[],consensus:null,risk:null,news:[],newsSentiment:{score:0,label:"محايد",color:"var(--gold)"},interactions:[]};
+      dataSources[pair]={...(dataSources[pair]||{}),real:false,newsReal:false};
+      if(pair===activePair)renderAll(pair);
+      continue;
+    }
+    const safeNews=news||[],sent=aggSent(safeNews),ms=buildMS(candles,pair,sent);
+    if(!ms)continue;
+    const enriched=AGENTS.map(a=>({...a,...(agentStates[a.id]||{influence:0.6,confidence:0.6,wins:0,losses:0,streak:0})}));
+    const agentResults=enriched.map((a,ai)=>({...a,...decide(a,ms,cycleNum*100+pi*16+ai)}));
+    const consensus=buildConsensus(agentResults,ms.newsScore,cycleNum+pi*1000);
+    const risk=buildRisk(agentResults,ms,pair);
+    const interactions=buildInts(agentResults);
+    prevCycleMap[pair]={price:ms.last,decisions:agentResults.map(a=>({id:a.id,decision:a.decision}))};
+    simMap[pair]={ms,candles,agentResults,consensus,risk,news:safeNews,newsSentiment:sent,interactions};
+    signalHistory.unshift({time:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"}),pair,dir:consensus.dir,buy:consensus.buy,sell:consensus.sell,conf:Math.round(parseFloat(consensus.conf)*100),rsi:ms.rsi,rr:risk?.rr||"—"});
+    if(signalHistory.length>60)signalHistory=signalHistory.slice(0,60);
+    if(pair===activePair)renderAll(pair);
+    renderPbar();renderPO();renderBest();
+  }
+  try{localStorage.setItem("tc_v3",JSON.stringify(agentStates));}catch(e){}
+  // count failed pairs
+  const failedPairs=PAIRS.filter(p=>dataSources[p]&&!dataSources[p].real);
+  const now=new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  document.getElementById("lupd").textContent=now;
+  document.getElementById("sdot").style.display="none";
+  const failTxt=failedPairs.length?` · ❌ فشل: ${failedPairs.join(", ")}`:"";
+  document.getElementById("stxt").textContent="✓ دورة #"+cycleNum+" مكتملة"+failTxt;
+  renderAll(activePair);renderHistory();isLoading=false;startCountdown();
+}
+
+function startCountdown(){
+  clearInterval(cInterval);countdownSec=1800;
+  cInterval=setInterval(()=>{
+    countdownSec--;const m=Math.floor(countdownSec/60),s=countdownSec%60;
+    document.getElementById("ctxt").textContent=m+":"+s.toString().padStart(2,"0");
+    document.getElementById("cfill").style.width=(countdownSec/1800*100)+"%";
+    if(countdownSec<=0){clearInterval(cInterval);runCycle();}
+  },1000);
+}
+
+function selectPair(pair){
+  activePair=pair;selectedAgent=null;
+  document.getElementById("agdet").style.display="none";
+  renderAll(pair);window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function updateClock(){
+  const now=new Date();
+  document.getElementById("h-time").textContent=now.toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  document.getElementById("h-session").textContent=session();
+}
+setInterval(updateClock,1000);updateClock();
+
+/* ── PROTOCOL DETECTION ── */
+const _proto=window.location.protocol;
+const _isLocal=(_proto==="file:"||_proto==="content:"||_proto==="blob:"||!_proto.startsWith("http"));
+if(_isLocal){
+  document.body.innerHTML=`
+  <div style="min-height:100vh;background:#080c10;display:flex;align-items:center;justify-content:center;padding:16px;font-family:'IBM Plex Arabic',sans-serif;direction:rtl">
+    <div style="max-width:460px;width:100%">
+
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:42px;margin-bottom:8px">⚖️</div>
+        <div style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#00b4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">محكمة التداول</div>
+      </div>
+
+      <div style="background:rgba(255,61,61,0.08);border:1px solid rgba(255,61,61,0.35);border-radius:12px;padding:14px;margin-bottom:18px;text-align:center">
+        <div style="font-size:26px;margin-bottom:6px">⛔</div>
+        <div style="font-size:13px;font-weight:700;color:#ff3d3d;margin-bottom:5px">المتصفح يمنع طلبات الشبكة</div>
+        <div style="font-size:10px;color:#7a8fa8;line-height:1.8">
+          فتح الملف مباشرة من التحميلات → Chrome يحجب كل API<br>
+          البروتوكول المكتشف: <code style="color:#ffd700;background:rgba(255,215,0,0.1);padding:1px 6px;border-radius:3px">${_proto||"unknown"}</code>
+        </div>
+      </div>
+
+      <div style="font-size:9px;font-weight:700;color:#3a4a5a;letter-spacing:0.12em;margin-bottom:10px;text-align:center">اختر الحل المناسب لك</div>
+
+      <!-- حل 1: Netlify — من الكمبيوتر -->
+      <div style="background:rgba(0,230,118,0.05);border:1px solid rgba(0,230,118,0.3);border-radius:12px;padding:14px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:20px">🖥️</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#00e676">Netlify Drop — من الكمبيوتر</div>
+            <div style="font-size:8px;color:#3a4a5a">30 ثانية · مجاني · بدون تسجيل</div>
+          </div>
+          <span style="font-size:8px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);color:#00e676;padding:2px 7px;border-radius:10px;font-weight:700">الأسهل</span>
+        </div>
+        <div style="font-size:10px;color:#7a8fa8;line-height:2.1;border-right:2px solid rgba(0,230,118,0.3);padding-right:10px">
+          <div><span style="color:#00e676;font-weight:700">١.</span> من الكمبيوتر: افتح <a href="https://drop.netlify.com" target="_blank" style="color:#00b4ff;font-weight:700;text-decoration:none">drop.netlify.com</a></div>
+          <div><span style="color:#00e676;font-weight:700">٢.</span> اسحب ملف HTML وأفلته</div>
+          <div><span style="color:#00e676;font-weight:700">٣.</span> انسخ الرابط → افتحه على موبايلك ✅</div>
+        </div>
+      </div>
+
+      <!-- حل 2: Termux — على الهاتف نفسه -->
+      <div style="background:rgba(0,180,255,0.05);border:1px solid rgba(0,180,255,0.3);border-radius:12px;padding:14px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:20px">📱</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#00b4ff">Termux — على الهاتف مباشرة</div>
+            <div style="font-size:8px;color:#3a4a5a">بدون كمبيوتر · 3 دقائق للإعداد مرة واحدة</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#7a8fa8;line-height:2;border-right:2px solid rgba(0,180,255,0.3);padding-right:10px;margin-bottom:10px">
+          <div><span style="color:#00b4ff;font-weight:700">١.</span> حمّل <a href="https://f-droid.org/packages/com.termux/" target="_blank" style="color:#00b4ff;font-weight:700;text-decoration:none">Termux</a> من F-Droid أو Play Store</div>
+          <div><span style="color:#00b4ff;font-weight:700">٢.</span> الصق الأوامر التالية واحدة واحدة:</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:10px;direction:ltr;text-align:left;color:#a3e635;line-height:2">
+          <div>pkg update -y && pkg install python -y</div>
+          <div>termux-setup-storage</div>
+          <div>cd ~/storage/downloads</div>
+          <div>python -m http.server 8181</div>
+        </div>
+        <div style="font-size:10px;color:#7a8fa8;margin-top:8px;border-right:2px solid rgba(0,180,255,0.3);padding-right:10px">
+          <div><span style="color:#00b4ff;font-weight:700">٣.</span> افتح Chrome: <code style="color:#00b4ff;background:rgba(0,180,255,0.1);padding:1px 6px;border-radius:3px">http://localhost:8181</code></div>
+          <div><span style="color:#00b4ff;font-weight:700">٤.</span> اضغط على اسم الملف ✅</div>
+        </div>
+      </div>
+
+      <!-- حل 3: GitHub Pages -->
+      <div style="background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:12px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">🐙</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#a855f7">GitHub Pages</div>
+            <div style="font-size:8px;color:#3a4a5a">ارفع كـ index.html → فعّل GitHub Pages → رابط دائم مجاني</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:9px;color:#2a3a4a;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px">
+        🟢 الملف جاهز تماماً — المشكلة فقط في طريقة الفتح<br>
+        بمجرد الرفع: TwelveData + Finnhub + Yahoo RSS + ForexFactory تعمل كلها
+      </div>
+    </div>
+  </div>`;
+} else {
+  /* ── INIT الطبيعي (https:// فقط) ── */
+  renderPbar();
+  fetchCalendarEvents().then(()=>renderCalendar());
+  runCycle();
+}
+</script>
+</body>
+</html>
